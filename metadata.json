@@ -1,0 +1,6 @@
+{
+  "name": "Songkhla SecureTrack - ระบบฐานข้อมูลและติดตามผลการตรวจสอบ",
+  "description": "ระบบฐานข้อมูลดิจิทัลและติดตามผลการตรวจสอบกิจการควบคุมและสถานบริการ ที่ทำการปกครองจังหวัดสงขลา (กลุ่มงานความมั่นคง)",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
