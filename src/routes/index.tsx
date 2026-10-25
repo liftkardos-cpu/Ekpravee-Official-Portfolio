@@ -10,6 +10,7 @@ import {
   Eye,
   ExternalLink,
   FileText,
+  Github,
   GraduationCap,
   ImagePlus,
   Landmark,
@@ -61,9 +62,7 @@ import {
   clearDashboard,
   isValidUrl,
   loadDashboard,
-  normalizeUrl,
   saveDashboard,
-  subscribeDashboard,
   toCsv,
   type DashboardData,
 } from "@/lib/dashboard-store";
@@ -71,7 +70,7 @@ import {
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Songkhla SecureTrack — ระบบติดตามผลการตรวจสอบกิจการควบคุม" },
+      { title: "Ekpravee Official Portfolio" },
       {
         name: "description",
         content:
@@ -91,44 +90,12 @@ export const Route = createFileRoute("/")({
 });
 
 function readImage(file: File, cb: (url: string) => void) {
-  if (file.size > 8 * 1024 * 1024) {
-    toast.error("ไฟล์รูปใหญ่เกินไป (ไม่เกิน 8MB)");
+  if (file.size > 1.5 * 1024 * 1024) {
+    toast.error("ไฟล์รูปใหญ่เกินไป (ไม่เกิน 1.5MB)");
     return;
   }
   const r = new FileReader();
-  r.onload = (e) => {
-    const rawResult = String(e.target?.result);
-    const img = new Image();
-    img.onload = () => {
-      // Auto-resize to 400x400 max so it syncs across all devices effortlessly
-      const canvas = document.createElement("canvas");
-      const MAX_SIZE = 400;
-      let width = img.width;
-      let height = img.height;
-      if (width > height) {
-        if (width > MAX_SIZE) {
-          height = Math.round((height * MAX_SIZE) / width);
-          width = MAX_SIZE;
-        }
-      } else {
-        if (height > MAX_SIZE) {
-          width = Math.round((width * MAX_SIZE) / height);
-          height = MAX_SIZE;
-        }
-      }
-      canvas.width = width;
-      canvas.height = height;
-      const ctx = canvas.getContext("2d");
-      ctx?.drawImage(img, 0, 0, width, height);
-      const optimizedUrl = canvas.toDataURL("image/jpeg", 0.85);
-      cb(optimizedUrl);
-      toast.success("อัปโหลดและปรับขนาดรูปภาพสำเร็จ พร้อมบันทึกซิงค์ทุกอุปกรณ์");
-    };
-    img.onerror = () => {
-      cb(rawResult);
-    };
-    img.src = rawResult;
-  };
+  r.onload = () => cb(String(r.result));
   r.onerror = () => toast.error("อ่านไฟล์รูปไม่สำเร็จ");
   r.readAsDataURL(file);
 }
@@ -144,7 +111,6 @@ function Index() {
   const [passcodeInput, setPasscodeInput] = useState("");
   const [passcodeError, setPasscodeError] = useState(false);
 
-  // 1. Initial Load & Real-Time Multi-Device Cloud Sync
   useEffect(() => {
     try {
       const d = loadDashboard();
@@ -153,18 +119,7 @@ function Index() {
     } catch {
       toast.error("โหลดข้อมูลที่บันทึกไว้ไม่สำเร็จ — แสดงข้อมูลเริ่มต้นแทน");
     }
-
-    // Subscribe to Firestore for instantaneous updates from any PC or mobile device
-    const unsubscribe = subscribeDashboard((remoteData) => {
-      setSaved(remoteData);
-      setDraft((prev) => {
-        if (!edit) return remoteData;
-        return prev;
-      });
-    });
-
-    return () => unsubscribe();
-  }, [edit]);
+  }, []);
 
   const dirty = useMemo(
     () => JSON.stringify(saved) !== JSON.stringify(draft),
@@ -187,8 +142,8 @@ function Index() {
 
   const handlePasscodeSubmit = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    const clean = passcodeInput.trim();
-    if (clean === "000000" || clean === "030848") {
+    // Validate secret passcode
+    if (passcodeInput === "030848") {
       setPasscodeError(false);
       setPasscodeModalOpen(false);
       setPasscodeInput("");
@@ -206,27 +161,25 @@ function Index() {
       toast.info(`ยังไม่มี URL สำหรับ ${label}`);
       return;
     }
-    const cleanUrl = normalizeUrl(txt);
-    navigator.clipboard.writeText(cleanUrl);
+    navigator.clipboard.writeText(txt);
     toast.success(`คัดลอกลิงก์ ${label} แล้ว`);
   };
 
-  const copyCodeJson = () => {
-    const jsonStr = JSON.stringify(d, null, 2);
-    navigator.clipboard.writeText(jsonStr);
-    toast.success("คัดลอกโค้ด JSON ข้อมูลทั้งหมดแล้ว สามารถนำไปใส่ในโค้ด DEFAULT_DATA ได้ตลอด");
-  };
-
   const save = async () => {
+    const bad = Object.entries(draft.links).filter(
+      ([, v]) => v && !isValidUrl(v),
+    );
+    if (bad.length) {
+      toast.error("มีลิงก์ที่ไม่ถูกต้อง กรุณาใช้รูปแบบ https://...");
+      return;
+    }
     setSaving(true);
     try {
       await saveDashboard(draft);
       setSaved(draft);
-      toast.success("บันทึกข้อมูลและซิงค์คลาวด์เรียบร้อยแล้ว (อัปเดตทุกอุปกรณ์ทันที)");
-      setEdit(false);
-    } catch (err) {
-      console.error("Save error:", err);
-      toast.error("บันทึกไม่สำเร็จ กรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ต");
+      toast.success("บันทึกข้อมูลสำเร็จ");
+    } catch {
+      toast.error("บันทึกไม่สำเร็จ อาจเป็นเพราะรูปภาพมีขนาดใหญ่เกินไป");
     } finally {
       setSaving(false);
     }
@@ -248,16 +201,11 @@ function Index() {
     setEdit(false);
   };
 
-  const reset = async () => {
+  const reset = () => {
     clearDashboard();
     setSaved(structuredClone(DEFAULT_DATA));
     setDraft(structuredClone(DEFAULT_DATA));
-    try {
-      await saveDashboard(DEFAULT_DATA);
-      toast.success("คืนค่าข้อมูลเริ่มต้นและซิงค์ขึ้นระบบคลาวด์แล้ว");
-    } catch {
-      toast.success("คืนค่าข้อมูลเริ่มต้นเรียบร้อยแล้ว");
-    }
+    toast.success("คืนค่าข้อมูลเริ่มต้นแล้ว");
   };
 
   const exportCsv = () => {
@@ -270,17 +218,11 @@ function Index() {
     toast.success("ดาวน์โหลดไฟล์ CSV เรียบร้อยแล้ว");
   };
 
-  const openLink = (rawUrl: string, name: string) => {
-    const trimmed = rawUrl?.trim();
-    if (!trimmed) {
+  const openLink = (url: string, name: string) => {
+    if (!isValidUrl(url)) {
       toast.info(
         `ยังไม่ได้กำหนดลิงก์ “${name}” — เข้าโหมดแก้ไขเพื่อเพิ่มลิงก์`,
       );
-      return;
-    }
-    const url = normalizeUrl(trimmed);
-    if (!isValidUrl(url)) {
-      toast.error(`ลิงก์ “${name}” รูปแบบไม่ถูกต้อง`);
       return;
     }
     window.open(url, "_blank", "noopener,noreferrer");
@@ -377,8 +319,16 @@ function Index() {
               {/* Right: Student Profile Pill (Clean, Light Tone, No Edit Button) */}
               <div className="flex items-center gap-2.5 shrink-0">
                 <div className="flex items-center gap-3 px-3.5 py-2 rounded-2xl bg-slate-50/90 hover:bg-slate-100/90 border border-slate-200 text-slate-800 backdrop-blur-xl shadow-xs transition-colors">
-                  <div className="h-8 w-8 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-xs font-bold text-white shadow-xs shrink-0">
-                    <User className="h-4 w-4" />
+                  <div className="h-8 w-8 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-xs font-bold text-white shadow-xs shrink-0 overflow-hidden ring-1 ring-blue-400/30">
+                    {d.student.photo ? (
+                      <img
+                        src={d.student.photo}
+                        alt={d.student.name}
+                        className="h-full w-full object-cover object-top"
+                      />
+                    ) : (
+                      <User className="h-4 w-4" />
+                    )}
                   </div>
                   <div className="flex flex-col text-left">
                     <span className="text-xs sm:text-sm font-semibold text-slate-900 leading-tight">
@@ -457,7 +407,7 @@ function Index() {
                         <img
                           src={d.student.photo}
                           alt={d.student.name}
-                          className="h-full w-full object-cover"
+                          className="h-full w-full object-cover object-top"
                         />
                       ) : (
                         <User className="h-14 w-14 text-blue-900/40" />
@@ -1001,6 +951,54 @@ function Index() {
                     />
                   )}
                 </div>
+
+                {/* ลิงก์ 3: GitHub ซอร์สโค้ดระบบ */}
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between p-3.5 rounded-2xl border border-slate-200/80 bg-white/80 hover:bg-white hover:border-blue-400 transition-all shadow-xs">
+                    <div
+                      onClick={() =>
+                        openLink(d.links.githubUrl, "GitHub ซอร์สโค้ดระบบ")
+                      }
+                      className="flex items-center gap-3 min-w-0 flex-1 cursor-pointer"
+                    >
+                      <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-slate-900 text-white shadow-xs">
+                        <Github className="h-4 w-4" />
+                      </div>
+                      <span className="font-semibold text-xs sm:text-sm text-slate-800 truncate">
+                        ลิงก์ GitHub ซอร์สโค้ดระบบ
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1.5 shrink-0 ml-2">
+                      <button
+                        onClick={() => copyText(d.links.githubUrl, "GitHub")}
+                        className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg cursor-pointer transition-colors"
+                        title="คัดลอกลิงก์"
+                      >
+                        <Copy className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={() =>
+                          openLink(d.links.githubUrl, "GitHub ซอร์สโค้ดระบบ")
+                        }
+                        className="p-1.5 text-slate-400 hover:text-primary hover:bg-blue-50 rounded-lg cursor-pointer transition-colors"
+                        title="เปิดลิงก์"
+                      >
+                        <ExternalLink className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </div>
+                  {edit && (
+                    <UrlInput
+                      label="ลิงก์ GitHub ซอร์สโค้ด"
+                      value={draft.links.githubUrl}
+                      onChange={(v) =>
+                        set((x) => {
+                          x.links.githubUrl = v;
+                        })
+                      }
+                    />
+                  )}
+                </div>
               </div>
             </div>
           </section>
@@ -1053,9 +1051,9 @@ function Index() {
                 </button>
               ) : (
                 <div className="flex items-center gap-2 flex-wrap bg-slate-50/90 backdrop-blur-xl p-1.5 rounded-2xl border border-slate-200 shadow-sm">
-                  <span className="flex items-center gap-1.5 px-3 py-1 text-xs font-bold text-emerald-800 bg-emerald-100/90 rounded-xl border border-emerald-300">
-                    <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                    <span>ซิงค์คลาวด์ทุกอุปกรณ์</span>
+                  <span className="flex items-center gap-1 px-3 py-1 text-xs font-bold text-amber-800 bg-amber-100 rounded-xl border border-amber-300">
+                    <Unlock className="h-3.5 w-3.5 text-amber-700" />
+                    <span>โหมดแก้ไข</span>
                   </span>
                   <button
                     onClick={save}
@@ -1063,15 +1061,7 @@ function Index() {
                     className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-md cursor-pointer transition-colors"
                   >
                     <Save className="h-3.5 w-3.5" />
-                    <span>{saving ? "กำลังซิงค์..." : "บันทึกข้อมูล (PC & มือถือ)"}</span>
-                  </button>
-                  <button
-                    onClick={copyCodeJson}
-                    className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-white hover:bg-slate-100 text-blue-700 text-xs font-medium border border-slate-200 cursor-pointer transition-colors"
-                    title="คัดลอกโค้ด JSON ทั้งหมดสำหรับนำไปใส่ในโค้ดต้นฉบับ"
-                  >
-                    <Copy className="h-3.5 w-3.5 text-blue-600" />
-                    <span>คัดลอกโค้ด JSON</span>
+                    <span>{saving ? "กำลังบันทึก..." : "บันทึกข้อมูล"}</span>
                   </button>
                   <button
                     onClick={cancel}
