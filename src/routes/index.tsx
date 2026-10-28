@@ -209,16 +209,31 @@ function Index() {
   };
 
   const exportCsv = () => {
-    const blob = new Blob([toCsv(saved)], { type: "text/csv;charset=utf-8" });
     const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = "songkhla-securetrack.csv";
+    a.href = "/assets/Songkhla_SecureTrack_Database.csv";
+    a.download = "Songkhla_SecureTrack_Database.csv";
+    document.body.appendChild(a);
     a.click();
-    URL.revokeObjectURL(a.href);
-    toast.success("ดาวน์โหลดไฟล์ CSV เรียบร้อยแล้ว");
+    document.body.removeChild(a);
+    toast.success("ดาวน์โหลดฐานข้อมูล Songkhla SecureTrack (CSV) เรียบร้อยแล้ว");
   };
 
   const openLink = (url: string, name: string) => {
+    if (!url || !url.trim()) {
+      toast.info(
+        `ลิงก์ “${name}” อยู่ระหว่างจัดเตรียม (สามารถเข้าโหมดแก้ไขเพื่อใส่ลิงก์ได้)`,
+      );
+      return;
+    }
+    if (url.startsWith("/")) {
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = url.split("/").pop() || "download";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      return;
+    }
     if (!isValidUrl(url)) {
       toast.info(
         `ยังไม่ได้กำหนดลิงก์ “${name}” — เข้าโหมดแก้ไขเพื่อเพิ่มลิงก์`,
@@ -810,17 +825,17 @@ function Index() {
                   </div>
                   <div className="min-w-0 flex-1">
                     <span className="block font-bold text-sm sm:text-base text-white tracking-tight">
-                      โหลดข้อมูลตัวอย่างลง Google Sheets
+                      โหลดข้อมูลฐานข้อมูล (CSV / Excel)
                     </span>
                     <span className="block text-xs text-emerald-100">
-                      คลิกเพื่อดาวน์โหลดไฟล์ข้อมูลตัวอย่าง (CSV) / เปิดชีต
+                      คลิกเพื่อดาวน์โหลดไฟล์ฐานข้อมูลผลการตรวจสอบ Songkhla SecureTrack (CSV)
                     </span>
                   </div>
                   <Download className="h-5 w-5 shrink-0 text-emerald-100 group-hover:translate-y-0.5 transition-transform" />
                 </button>
                 {edit && (
                   <UrlInput
-                    label="ลิงก์ Google Sheets"
+                    label="ลิงก์ไฟล์ฐานข้อมูล (CSV / Sheets)"
                     value={draft.links.sheetsUrl}
                     onChange={(v) =>
                       set((x) => {
@@ -865,18 +880,25 @@ function Index() {
                       <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-[#083A75] text-white shadow-xs">
                         <FileText className="h-5 w-5" />
                       </div>
-                      <span className="font-semibold text-xs sm:text-sm text-slate-800 truncate">
-                        ลิงก์เอกสารเค้าโครงโครงงาน (PDF)
-                      </span>
+                      <div className="flex flex-col min-w-0 flex-1">
+                        <span className="font-semibold text-xs sm:text-sm text-slate-800 truncate">
+                          ลิงก์เอกสารเค้าโครงโครงงาน (PDF)
+                        </span>
+                        <span className="text-[11px] text-slate-400 font-normal truncate">
+                          {d.links.pdfUrl ? d.links.pdfUrl : "อยู่ระหว่างจัดเตรียมเอกสาร (ค่อยใส่ทีหลัง)"}
+                        </span>
+                      </div>
                     </div>
                     <div className="flex items-center gap-1.5 shrink-0 ml-2">
-                      <button
-                        onClick={() => copyText(d.links.pdfUrl, "เอกสาร PDF")}
-                        className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg cursor-pointer transition-colors"
-                        title="คัดลอกลิงก์"
-                      >
-                        <Copy className="h-4 w-4" />
-                      </button>
+                      {d.links.pdfUrl && (
+                        <button
+                          onClick={() => copyText(d.links.pdfUrl, "เอกสาร PDF")}
+                          className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg cursor-pointer transition-colors"
+                          title="คัดลอกลิงก์"
+                        >
+                          <Copy className="h-4 w-4" />
+                        </button>
+                      )}
                       <button
                         onClick={() =>
                           openLink(
@@ -885,7 +907,7 @@ function Index() {
                           )
                         }
                         className="p-1.5 text-slate-400 hover:text-primary hover:bg-blue-50 rounded-lg cursor-pointer transition-colors"
-                        title="เปิดลิงก์"
+                        title={d.links.pdfUrl ? "เปิดลิงก์" : "อยู่ระหว่างจัดเตรียม"}
                       >
                         <ExternalLink className="h-4 w-4" />
                       </button>
@@ -893,7 +915,7 @@ function Index() {
                   </div>
                   {edit && (
                     <UrlInput
-                      label="ลิงก์เอกสารโครงงาน (PDF/Drive)"
+                      label="ลิงก์เอกสารโครงงาน (PDF/Drive) (ใส่ทีหลังได้)"
                       value={draft.links.pdfUrl}
                       onChange={(v) =>
                         set((x) => {

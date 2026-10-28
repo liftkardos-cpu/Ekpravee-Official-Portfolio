@@ -72,28 +72,67 @@ export const DEFAULT_DATA: DashboardData = {
     "สามารถนำความรู้ไปต่อยอดในการประกอบอาชีพได้",
   ],
   links: {
-    appUrl: "https://songkhla-securetrack.dopa.go.th",
-    sheetsUrl: "https://docs.google.com/spreadsheets/d/1SongkhlaSecureTrack",
-    portfolioUrl: "https://portfolio.ekpraveer.dev/songkhla-securetrack",
-    pdfUrl: "https://drive.google.com/file/d/sample-proposal.pdf",
-    videoUrl: "https://www.youtube.com/watch?v=sample-songkhla-presentation",
-    githubUrl: "https://github.com/Ekkaprawee-sk/Songkhla-SecureTrack",
+    appUrl: "https://songkhlasecuretrack.vercel.app/",
+    sheetsUrl: "/assets/Songkhla_SecureTrack_Database.csv",
+    portfolioUrl: "https://songkhlasecuretrack.vercel.app/",
+    pdfUrl: "",
+    videoUrl: "https://youtu.be/3JpDJ1R8PYw?si=UCA_yMyotGE4X-8v",
+    githubUrl: "https://github.com/liftkardos-cpu/Ekpravee-Official-Portfolio.git",
   },
   footer:
     "ระบบฐานข้อมูลและติดตามผลการตรวจสอบกิจการควบคุมและสถานบริการ จังหวัดสงขลา | ที่ทำการปกครองจังหวัดสงขลา (กลุ่มงานความมั่นคง) ร่วมกับ วิทยาลัยการจัดการเพื่อการพัฒนา มหาวิทยาลัยทักษิณ",
 };
 
-const KEY = "songkhla-securetrack:v2";
+const KEY = "songkhla-securetrack:v3";
 
 export function loadDashboard(): DashboardData {
   let raw = window.localStorage.getItem(KEY);
   if (!raw) {
-    // Check if there was an earlier v1 key
-    const oldRaw = window.localStorage.getItem("songkhla-securetrack:v1");
+    // Check if there was an earlier v2 or v1 key
+    const oldRaw =
+      window.localStorage.getItem("songkhla-securetrack:v2") ||
+      window.localStorage.getItem("songkhla-securetrack:v1");
     if (!oldRaw) return structuredClone(DEFAULT_DATA);
     raw = oldRaw;
   }
   const parsed = JSON.parse(raw) as Partial<DashboardData>;
+  const mergedLinks = { ...DEFAULT_DATA.links, ...(parsed.links || {}) };
+
+  // If old placeholders were saved, replace them with official URLs
+  if (
+    !mergedLinks.appUrl ||
+    mergedLinks.appUrl.includes("dopa.go.th")
+  ) {
+    mergedLinks.appUrl = DEFAULT_DATA.links.appUrl;
+  }
+  if (
+    !mergedLinks.sheetsUrl ||
+    mergedLinks.sheetsUrl.includes("1SongkhlaSecureTrack")
+  ) {
+    mergedLinks.sheetsUrl = DEFAULT_DATA.links.sheetsUrl;
+  }
+  if (
+    !mergedLinks.portfolioUrl ||
+    mergedLinks.portfolioUrl.includes("ekpraveer.dev")
+  ) {
+    mergedLinks.portfolioUrl = DEFAULT_DATA.links.portfolioUrl;
+  }
+  if (
+    !mergedLinks.videoUrl ||
+    mergedLinks.videoUrl.includes("sample-songkhla-presentation")
+  ) {
+    mergedLinks.videoUrl = DEFAULT_DATA.links.videoUrl;
+  }
+  if (
+    !mergedLinks.githubUrl ||
+    mergedLinks.githubUrl.includes("Ekkaprawee-sk/Songkhla-SecureTrack")
+  ) {
+    mergedLinks.githubUrl = DEFAULT_DATA.links.githubUrl;
+  }
+  if (mergedLinks.pdfUrl && mergedLinks.pdfUrl.includes("sample-proposal.pdf")) {
+    mergedLinks.pdfUrl = "";
+  }
+
   const merged: DashboardData = {
     ...structuredClone(DEFAULT_DATA),
     ...parsed,
@@ -110,7 +149,7 @@ export function loadDashboard(): DashboardData {
       !parsed.orgSub || parsed.orgSub === "กลุ่มงานความมั่นคง"
         ? DEFAULT_DATA.orgSub
         : parsed.orgSub,
-    links: { ...DEFAULT_DATA.links, ...parsed.links },
+    links: mergedLinks,
   };
   return merged;
 }
