@@ -215,7 +215,9 @@ function Index() {
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
-    toast.success("ดาวน์โหลดฐานข้อมูล Songkhla SecureTrack (CSV) เรียบร้อยแล้ว");
+    toast.success(
+      "ดาวน์โหลดฐานข้อมูล Songkhla SecureTrack (CSV) เรียบร้อยแล้ว",
+    );
   };
 
   const openLink = (url: string, name: string) => {
@@ -828,7 +830,8 @@ function Index() {
                       โหลดข้อมูลฐานข้อมูล (CSV / Excel)
                     </span>
                     <span className="block text-xs text-emerald-100">
-                      คลิกเพื่อดาวน์โหลดไฟล์ฐานข้อมูลผลการตรวจสอบ Songkhla SecureTrack (CSV)
+                      คลิกเพื่อดาวน์โหลดไฟล์ฐานข้อมูลผลการตรวจสอบ Songkhla
+                      SecureTrack (CSV)
                     </span>
                   </div>
                   <Download className="h-5 w-5 shrink-0 text-emerald-100 group-hover:translate-y-0.5 transition-transform" />
@@ -885,7 +888,9 @@ function Index() {
                           ลิงก์เอกสารเค้าโครงโครงงาน (PDF)
                         </span>
                         <span className="text-[11px] text-slate-400 font-normal truncate">
-                          {d.links.pdfUrl ? d.links.pdfUrl : "อยู่ระหว่างจัดเตรียมเอกสาร (ค่อยใส่ทีหลัง)"}
+                          {d.links.pdfUrl
+                            ? d.links.pdfUrl
+                            : "อยู่ระหว่างจัดเตรียมเอกสาร (ค่อยใส่ทีหลัง)"}
                         </span>
                       </div>
                     </div>
@@ -907,7 +912,9 @@ function Index() {
                           )
                         }
                         className="p-1.5 text-slate-400 hover:text-primary hover:bg-blue-50 rounded-lg cursor-pointer transition-colors"
-                        title={d.links.pdfUrl ? "เปิดลิงก์" : "อยู่ระหว่างจัดเตรียม"}
+                        title={
+                          d.links.pdfUrl ? "เปิดลิงก์" : "อยู่ระหว่างจัดเตรียม"
+                        }
                       >
                         <ExternalLink className="h-4 w-4" />
                       </button>

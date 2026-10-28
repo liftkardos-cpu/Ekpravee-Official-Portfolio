@@ -77,7 +77,8 @@ export const DEFAULT_DATA: DashboardData = {
     portfolioUrl: "https://songkhlasecuretrack.vercel.app/",
     pdfUrl: "",
     videoUrl: "https://youtu.be/3JpDJ1R8PYw?si=UCA_yMyotGE4X-8v",
-    githubUrl: "https://github.com/liftkardos-cpu/Ekpravee-Official-Portfolio.git",
+    githubUrl:
+      "https://github.com/liftkardos-cpu/Ekpravee-Official-Portfolio.git",
   },
   footer:
     "ระบบฐานข้อมูลและติดตามผลการตรวจสอบกิจการควบคุมและสถานบริการ จังหวัดสงขลา | ที่ทำการปกครองจังหวัดสงขลา (กลุ่มงานความมั่นคง) ร่วมกับ วิทยาลัยการจัดการเพื่อการพัฒนา มหาวิทยาลัยทักษิณ",
@@ -99,10 +100,7 @@ export function loadDashboard(): DashboardData {
   const mergedLinks = { ...DEFAULT_DATA.links, ...(parsed.links || {}) };
 
   // If old placeholders were saved, replace them with official URLs
-  if (
-    !mergedLinks.appUrl ||
-    mergedLinks.appUrl.includes("dopa.go.th")
-  ) {
+  if (!mergedLinks.appUrl || mergedLinks.appUrl.includes("dopa.go.th")) {
     mergedLinks.appUrl = DEFAULT_DATA.links.appUrl;
   }
   if (
@@ -129,7 +127,10 @@ export function loadDashboard(): DashboardData {
   ) {
     mergedLinks.githubUrl = DEFAULT_DATA.links.githubUrl;
   }
-  if (mergedLinks.pdfUrl && mergedLinks.pdfUrl.includes("sample-proposal.pdf")) {
+  if (
+    mergedLinks.pdfUrl &&
+    mergedLinks.pdfUrl.includes("sample-proposal.pdf")
+  ) {
     mergedLinks.pdfUrl = "";
   }
 

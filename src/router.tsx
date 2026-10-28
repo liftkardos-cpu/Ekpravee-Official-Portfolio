@@ -22,16 +22,18 @@ export function createRouter() {
   return router;
 }
 
-let routerInstance: ReturnType<typeof createRouter> | undefined;
+// In SSR, return a fresh router per request to avoid "router is already dehydrated" invariant errors
+let clientRouterInstance: ReturnType<typeof createRouter> | undefined;
 
 export function getRouter() {
-  if (!routerInstance) {
-    routerInstance = createRouter();
+  if (typeof window === "undefined") {
+    return createRouter();
   }
-  return routerInstance;
+  if (!clientRouterInstance) {
+    clientRouterInstance = createRouter();
+  }
+  return clientRouterInstance;
 }
-
-export const router = getRouter();
 
 declare module "@tanstack/react-router" {
   interface Register {

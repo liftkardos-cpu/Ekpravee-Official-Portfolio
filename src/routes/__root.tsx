@@ -83,48 +83,48 @@ const queryClient = new QueryClient({
 });
 
 export const Route = createRootRoute({
-    head: () => ({
-      meta: [
-        { charSet: "utf-8" },
-        { name: "viewport", content: "width=device-width, initial-scale=1" },
-        { title: "Songkhla SecureTrack - ระบบฐานข้อมูลและติดตามผลการตรวจสอบ" },
-        {
-          name: "description",
-          content:
-            "ระบบฐานข้อมูลดิจิทัลและติดตามผลการตรวจสอบกิจการควบคุมและสถานบริการ ที่ทำการปกครองจังหวัดสงขลา (กลุ่มงานความมั่นคง)",
-        },
-        {
-          property: "og:title",
-          content: "Songkhla SecureTrack - ระบบฐานข้อมูลและติดตามผลการตรวจสอบ",
-        },
-        {
-          property: "og:description",
-          content:
-            "ระบบฐานข้อมูลดิจิทัลและติดตามผลการตรวจสอบกิจการควบคุมและสถานบริการ ที่ทำการปกครองจังหวัดสงขลา (กลุ่มงานความมั่นคง)",
-        },
-      ],
-      links: [
-        {
-          rel: "stylesheet",
-          href: appCss,
-        },
-        { rel: "preconnect", href: "https://fonts.googleapis.com" },
-        {
-          rel: "preconnect",
-          href: "https://fonts.gstatic.com",
-          crossOrigin: "anonymous",
-        },
-        {
-          rel: "stylesheet",
-          href: "https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600;700&family=Sarabun:wght@400;500;600;700&display=swap",
-        },
-        { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
-      ],
-    }),
-    shellComponent: RootShell,
-    component: RootComponent,
-    notFoundComponent: NotFoundComponent,
-    errorComponent: ErrorComponent,
+  head: () => ({
+    meta: [
+      { charSet: "utf-8" },
+      { name: "viewport", content: "width=device-width, initial-scale=1" },
+      { title: "Songkhla SecureTrack - ระบบฐานข้อมูลและติดตามผลการตรวจสอบ" },
+      {
+        name: "description",
+        content:
+          "ระบบฐานข้อมูลดิจิทัลและติดตามผลการตรวจสอบกิจการควบคุมและสถานบริการ ที่ทำการปกครองจังหวัดสงขลา (กลุ่มงานความมั่นคง)",
+      },
+      {
+        property: "og:title",
+        content: "Songkhla SecureTrack - ระบบฐานข้อมูลและติดตามผลการตรวจสอบ",
+      },
+      {
+        property: "og:description",
+        content:
+          "ระบบฐานข้อมูลดิจิทัลและติดตามผลการตรวจสอบกิจการควบคุมและสถานบริการ ที่ทำการปกครองจังหวัดสงขลา (กลุ่มงานความมั่นคง)",
+      },
+    ],
+    links: [
+      {
+        rel: "stylesheet",
+        href: appCss,
+      },
+      { rel: "preconnect", href: "https://fonts.googleapis.com" },
+      {
+        rel: "preconnect",
+        href: "https://fonts.gstatic.com",
+        crossOrigin: "anonymous",
+      },
+      {
+        rel: "stylesheet",
+        href: "https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600;700&family=Sarabun:wght@400;500;600;700&display=swap",
+      },
+      { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
+    ],
+  }),
+  shellComponent: RootShell,
+  component: RootComponent,
+  notFoundComponent: NotFoundComponent,
+  errorComponent: ErrorComponent,
 });
 
 function RootShell({ children }: { children: ReactNode }) {
